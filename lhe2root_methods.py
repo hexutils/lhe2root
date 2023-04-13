@@ -4,25 +4,27 @@ import uproot
 import pandas as pd
 import numpy as np
 import mplhep as hep
-import lhe_constants
-import lhefile_methods
+import useful_funcs_and_constants
+import lhe_reader
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import warnings
 
 plt.style.use(hep.style.ROOT)
 mpl.rcParams['axes.labelsize'] = 40
 mpl.rcParams['xaxis.labellocation'] = 'center'
 
-def scale(counts, scaleto):
+def scale(scaleto, counts, bins=[]):
     """This function scales histograms according to their absolute area under the curve (no negatives allowed!)
 
     Parameters
     ----------
-    counts : list[Union[int,float]]
-        A list of bin counts
     scaleto : float
         The absolute area to scale to
-
+    counts : list[Union[int,float]]
+        A list of bin counts
+    bins : list[float]
+        The bins you want to use; use this option if you are passing a numpy histogram in, by default []
     Returns
     -------
     list[float]
@@ -32,70 +34,29 @@ def scale(counts, scaleto):
     signs = np.sign(counts) #makes sure to preserve sign
     counts = np.abs(counts)
     
+    if any(bins):
+        return signs*counts*scaleto/np.sum(counts), bins
+    
     return signs*counts*scaleto/np.sum(counts)
 
 
-def get_cross_section_from_LHE_file(LHE_file_path):
-    """Gets the cross section and its uncertainty from a given LHE file using regular expressions
-
-    Parameters
-    ----------
-    LHE_file_path : str
-        The file path for the LHE file
-
-    Returns
-    -------
-    Tuple[str, str]
-        A tuple of strings containing the cross section and its uncertainty
-    """
-    
-    cross_section = uncertainty = ""
-    
-    with open(LHE_file_path) as getting_cross_section:
-        head = getting_cross_section.read()
-        
-        #This regex was made by the very very helpful https://pythex.org/ (shoutout professor Upsorn Praphamontripong)
-        cross_finder = re.compile(r'<init>\n.+\n.+(\d+\.\d+E(\+|-)\d{2})\s+(\d+\.\d+E(\+|-)\d{2})\s+(\d+\.\d+E(\+|-)\d{2})(\d|\s)+</init>')
-        cross_section_match = re.search(cross_finder,head)
-        
-        cross_section = cross_section_match.group(1)
-        
-        uncertainty = cross_section_match.group(3)
-        
-    return cross_section, uncertainty #returns the cross section and its uncertainty        
-
-def check_for_MELA():
-    """A function that checks whether or not you have the environment variables for MELA set up within your terminal
-
-    Returns
-    -------
-    bool
-        A boolean as to whether or not MELA is properly set up
-    """
-    if "LD_LIBRARY_PATH" not in os.environ: #this library path is set up by the MELA setup script
-        print("MELA environment variables have not been set up correctly")
-        if 'HexUtils' in os.getcwd():
-            print("Run './install.sh' in the directory above HexUtils to set these up!")
-        else:
-            print("Run './setup.sh' in the MELA directory to set these up!")
-            
-        return False
-    
-    return True
-
-
-def recursively_convert(current_directory, output_directory, argument, clean=False, verbose=False, exceptions=set(), write=""):
+def recursively_convert(env, current_directory, output_directory, argument, other_args=[], clean=False, verbose=False, exceptions=set(), 
+                        outfile_prefix='LHE', cut_down_to=-1, write=""):
     """This function will recurse through every directory and subdirectory in the place you call it, 
     and attempt to convert those files to ROOT files using lhe2root
 
     Parameters
     ----------
+    env : dict
+        This contains the lhe2root environment variables by doing dict(os.environ) in a main method
     current_directory : str
         The directory to start recursing downwards from
     output_directory : str
         The directory to output results to
     argument : str
-        the lhe2root argument to use (see lhe_2_root_options in lhe_constants)
+        the lhe2root conversion option to use (see lhe_2_root_options in useful_funcs_and_constants)
+    other_args : list[str]
+        The other lhe2root arguments that can be used (see lhe_2_root_args in useful_funcs_and_constants), by default []
     clean : bool, optional
         If True, this function will wipe any old conversion and re-convert the files, by default False
     verbose : bool, optional
@@ -105,6 +66,10 @@ def recursively_convert(current_directory, output_directory, argument, clean=Fal
         NOTE: This is the case for any string in the path! folders of path <exception>/<other folder> will be ignored
         The same goes for folders where a substring of the folder matches the name in the exception - useful for catching multiple folders!
         Name your folders carefully!
+    outfile_prefix : str, optional
+        The prefix to attach to the generated ROOT files, by default "LHE"
+    cut_down_to : int, optional
+        The number of events you want in the LHE file before converting. Negative numbers mean all events will be kept, by default -1
     write : str, optional
         If a string, this will be the file that you will write the cross sections to. The file will be comma-separated, by default ""
 
@@ -118,7 +83,6 @@ def recursively_convert(current_directory, output_directory, argument, clean=Fal
     FileNotFoundError
         If the output directory is not found/not a directory raises an error
     """
-    
     if output_directory[-1] != '/':
         output_directory += '/'
     
@@ -131,65 +95,55 @@ def recursively_convert(current_directory, output_directory, argument, clean=Fal
         # print(candidate)
         candidate = os.fsdecode(candidate)
         
-        candidate_filename = candidate[:candidate.rfind('.')]
-                
         candidate = current_directory + '/' + candidate
         # print(candidate)
         
         is_exempt = False
-        for exemption in exceptions:
-            if exemption in candidate:
+        for exemption in exceptions: #check all the exempted folders
+            if exemption in candidate: #if the keyword is ANYWHERE in the file path, ignore it!
                 is_exempt = True
         
         
-        if (os.path.isdir(candidate)) and (not is_exempt): #convert all the LHE files in every directory below you
-            one_folder_below = recursively_convert(candidate, argument, clean, verbose, exceptions)
-            cross_sections.update(one_folder_below)
+        if (os.path.isdir(candidate)) and (not is_exempt): #convert all the LHE files in every directory below you that are not exempt
+            one_folder_below = recursively_convert(env, candidate, output_directory, argument, other_args, clean, verbose, exceptions)
+            cross_sections.update(one_folder_below) #updates the dictionary
         
         if candidate.split('.')[-1] != 'lhe':
-            if clean and candidate.split['.'][-1] == '.root':
-                lhe_constants.print_msg_box("Removing " + candidate, title="Cleaning directory " + current_directory)
-                os.remove(candidate)
+        #     if clean and candidate.split['.'][-1] == '.root':
+        #         useful_funcs_and_constants.print_msg_box("Removing " + candidate, title="Cleaning directory " + current_directory)
+        #         os.remove(candidate)
                 
             continue
         
-        else:
-            output_filename = 'LHE_' + candidate_filename + '.root'
-            
-            running_str = "python3 lhe2root.py --" + argument + " " + output_directory + output_filename + ' '
-            running_str += candidate
-            
-            if not verbose:
-                running_str += ' > /dev/null 2>&1'
-            
-            cross_section, uncertainty = get_cross_section_from_LHE_file(candidate) #these are currently strings!
-            
-            cross_sections[current_directory + '/' + output_filename] = (cross_section, uncertainty)
-            
-            titlestr = "Generating ROOT file for ./" + os.path.relpath(candidate)
-            
-            number_events = len(lhefile_methods.get_all_events(candidate))
-            
-            lhe_constants.print_msg_box("Input name: " + candidate.split('/')[-1] + #This is the big message box seen per LHE file found
-                "\nOutput: " + str(os.path.relpath(output_directory + output_filename)) + 
-                "\nArgument: " + argument + 
-                "\n\u03C3: " + cross_section + " \u00b1 " + uncertainty + 
-                "\nN: " + "{:e}".format(number_events) + " events",
-                title=titlestr, width=len(titlestr))
-            
-            os.system(running_str)
+        else:            
+            reader = lhe_reader.lhe_reader(candidate)
+            cut_down_filename = candidate.split('.')[0] + "_cut_down_to" + str(cut_down_to) + '.lhe'
+            if cut_down_to > 0 and not os.path.isfile(candidate.split('.')[0] + "_cut_down_to" + str(cut_down_to) + '.lhe'):
+                candidate = cut_down_filename
+                if verbose:
+                    print("Cutting down file to", cut_down_to, "events in file", candidate)
+                
+                with open(candidate, 'w+') as f:
+                    f.write(reader.cut_down_to_size(cut_down_to))
+                
+                reader = lhe_reader.lhe_reader(candidate)#reset the reader and the candidate to the new cut down file
+                
+            outfile = reader.to_ROOT(argument, env, other_args, output_directory, outfile_prefix, verbose, clean)
+            cross_sections[outfile] = reader.cross_section
     
     if write:
+        print("Dumping Cross Sections to", output_directory + write)
         with open(output_directory + write, "w+") as f:
             f.write("Filename, Cross Section, Uncertainty\n")
             for fname, (crosssection, uncertainty) in cross_sections.items():
-                f.write(fname + ', ' + crosssection + ', ' + uncertainty + '\n')
+                f.write(fname + ', ' + "{:e}".format(crosssection) + ', ' + "{:e}".format(uncertainty) + '\n')
                 
     return cross_sections
 
 
 
-def plot_one_quantity(filenames, attribute, xrange, nbins=100, labels=[], norm=False, title=""):
+def plot_one_quantity(filenames, attribute, xrange, nbins=100, labels=[], norm=False, title="", 
+                      cuts={}, perFile=False):
     """This function plots one quantity of your choice from ROOT files!
 
     Parameters
@@ -208,7 +162,11 @@ def plot_one_quantity(filenames, attribute, xrange, nbins=100, labels=[], norm=F
         Whether to normalize the plotting areas to 1 for easier comparison, by default False
     title : str, optional
         An extra "title" on the x label that is concatenated, by default ""
-
+    cuts : dict
+        A dictionary containing the upper and lower level cuts that you are making on each quantity, by default {}
+    perFile : bool
+        Whether you want to have a single plot for each file, by default False
+        
     Returns
     -------
     dict
@@ -232,6 +190,10 @@ def plot_one_quantity(filenames, attribute, xrange, nbins=100, labels=[], norm=F
             f = f[keys[0]].arrays(library='pd')
             
             try:
+                for quan, cut in cuts.items():
+                    # print(cut)
+                    # print(f.query(quan + ' > @cut[0]'))
+                    f = f.query(quan + ' > @cut[0] & ' + quan + ' < @cut[1]')
                 value = f[attribute]
             except:
                 raise ValueError("You can only choose from these attributes:\n" + str(list(f.columns)))
@@ -241,7 +203,7 @@ def plot_one_quantity(filenames, attribute, xrange, nbins=100, labels=[], norm=F
             histograms[file] = (hist_counts, hist_bins)
             
             if norm:
-                hist_counts = scale(hist_counts, 1)
+                hist_counts = scale(1, hist_counts)
                 
             if labels:
                 hep.histplot(hist_counts, hist_bins, lw=2, label=labels[n])
@@ -250,16 +212,25 @@ def plot_one_quantity(filenames, attribute, xrange, nbins=100, labels=[], norm=F
                 
             plt.xlim(xrange)
             
-            if attribute in lhe_constants.beautified_title:
-                plt.xlabel(lhe_constants.beautified_title[attribute] + title, horizontalalignment='center', fontsize=30)
+            if attribute in useful_funcs_and_constants.beautified_title:
+                plt.xlabel(useful_funcs_and_constants.beautified_title[attribute] + title, horizontalalignment='center', fontsize=30)
             else:
                 plt.xlabel(attribute + title, horizontalalignment='center', fontsize=30)
-                
-    if labels:
-        plt.legend()
         
-    plt.tight_layout()
-    plt.show()
+        if perFile:
+            if labels:
+                plt.legend()
+            plt.tight_layout()
+            file = file.split('/')[-1].split('.')[0]
+            plt.savefig(attribute + "_" + file + '.png')
+            plt.cla()
+    
+    if not perFile:            
+        if labels:
+            plt.legend()
+            
+        plt.tight_layout()
+        plt.savefig(attribute + '.png')
     
     return histograms
 
@@ -290,8 +261,13 @@ def plot_interference(mixed_file, pure1, pure2, pure1Name, pure2Name, attribute,
 
     Returns
     -------
-    _type_
+    Tuple(numpy.array)
         The interference portion between the three plots
+        
+    Raises
+    ------
+    ValueError
+        If there is a column listed that is not found
     """
     
     mixed_file = os.path.abspath(mixed_file)
@@ -304,7 +280,7 @@ def plot_interference(mixed_file, pure1, pure2, pure1Name, pure2Name, attribute,
         interf_sample = interf[interf.keys()[0]].arrays(library='pd')
         
     if attribute not in interf_sample.columns:
-        return
+        raise ValueError(attribute + " not in file!")
         
     with uproot.open(pure1) as rawBW1:
         BW1_sample = rawBW1[rawBW1.keys()[0]].arrays(library='pd')
@@ -313,16 +289,16 @@ def plot_interference(mixed_file, pure1, pure2, pure1Name, pure2Name, attribute,
         BW2_sample = rawBW2[rawBW2.keys()[0]].arrays(library='pd')
         
     
-    interf_hist, bins = np.histogram(interf_sample[attribute], range=lhe_constants.ranges[attribute], bins=nbins)
-    BW1_hist, _ = np.histogram(BW1_sample[attribute], range=lhe_constants.ranges[attribute], bins=bins)
-    BW2_hist, _ = np.histogram(BW2_sample[attribute], range=lhe_constants.ranges[attribute], bins=bins)
+    interf_hist, bins = np.histogram(interf_sample[attribute], range=useful_funcs_and_constants.ranges[attribute], bins=nbins) #edit these ranges to your heart's desire!
+    BW1_hist, _ = np.histogram(BW1_sample[attribute], range=useful_funcs_and_constants.ranges[attribute], bins=bins)
+    BW2_hist, _ = np.histogram(BW2_sample[attribute], range=useful_funcs_and_constants.ranges[attribute], bins=bins)
     
     # print('%E' % CrossSections[pure1][0], '%E' % CrossSections[pure2][0], '%E' % np.sqrt(CrossSections[pure1][0]*CrossSections[pure2][0])
     #     , '%E' % CrossSections[mixed_file][0])
     
-    interf_hist = scale(interf_hist, cross_sections[mixed_file])
-    BW1_hist = scale(BW1_hist, cross_sections[pure1])
-    BW2_hist = scale(BW2_hist, cross_sections[pure2])
+    interf_hist = scale(cross_sections[mixed_file], interf_hist)
+    BW1_hist = scale(cross_sections[pure1], BW1_hist)
+    BW2_hist = scale(cross_sections[pure2], BW2_hist)
     
     interf_actual = interf_hist - BW1_hist - BW2_hist
     
@@ -335,12 +311,37 @@ def plot_interference(mixed_file, pure1, pure2, pure1Name, pure2Name, attribute,
     # print(interf_hist)
     
     hep.histplot(interf_actual, bins, label=pure1Name + '/' + pure2Name + ' Interference', lw=2)
-    
-    plt.xlabel(lhe_constants.beautified_title[attribute] + " " + title, horizontalalignment='center', fontsize=20)
-    plt.xlim(lhe_constants.ranges[attribute])
+    plt.xlabel(useful_funcs_and_constants.beautified_title[attribute] + " " + title, horizontalalignment='center', fontsize=20)
+    plt.xlim(useful_funcs_and_constants.ranges[attribute])
     plt.legend()
     plt.tight_layout()
-    
-    plt.show()
+    plt.savefig('Interference_between_2.png')
+    # plt.show()
     
     return interf_actual, bins
+
+
+def cut_ranges_to_dict(cut_ranges):
+    """Takes in cut ranges of triples of style <name>, <upper bound>, <lower bound>
+    singular plotting can use. Styled such that a dot indicates that there is no cut.
+
+    Parameters
+    ----------
+    cut_ranges : list[list[Union[str, float]]]
+        the list of triples generated by args.cut
+
+    Returns
+    -------
+    dict
+        A dictionary of style <cut name>: (<upper bound>, <lower bound>)
+    """
+    cut_dict = {}
+    for key, lower, upper in cut_ranges:
+        if lower == '.':
+            lower = -np.inf
+        if upper == '.':
+            upper = np.inf
+        
+        cut_dict[key] = (lower, upper)
+    
+    return cut_dict

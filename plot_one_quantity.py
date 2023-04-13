@@ -1,6 +1,5 @@
 import argparse
 import lhe2root_methods
-import lhe_constants
 
 def ran(s):
     """A function to define the range format for this program
@@ -20,15 +19,13 @@ def ran(s):
     except:
         raise argparse.ArgumentTypeError("Ranges must be of form 'left, right'!")
 
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument('filenames',nargs='+',
                         help="The file you want to plot")
 
-    parser.add_argument('-v','--value',default='M4L', choices=list(lhe_constants.beautified_title.keys()),
+    parser.add_argument('-v','--value',default='M4L',
                         help="The attributes you want to plot.")
 
     parser.add_argument('-r','--range', default=(6,9), type=ran,
@@ -45,6 +42,16 @@ if __name__ == "__main__":
 
     parser.add_argument('-t', '--title', default="",
                         help="Optional Figure Title")
-
+    
+    parser.add_argument('-c', '--cut', nargs=3, action='append',
+                        default=[['M4L', '.', '.']],
+                        help="The cuts for your quantity. In form <name> <lower bound> <upper bound>. Replace a bound with a '.' if you do not want to place a bound there")
+    
+    parser.add_argument('-p', '--perFile', action="store_true",
+                        help="Activate if you want a plot for each file")
     args = parser.parse_args()
-    lhe2root_methods.plot_one_quantity(args.filenames, args.value, args.range, args.nbins, args.labels, args.norm, args.title)
+    
+    cuts = lhe2root_methods.cut_ranges_to_dict(args.cut)
+    
+    lhe2root_methods.plot_one_quantity(args.filenames, args.value, args.range, args.nbins, 
+                                       args.labels, args.norm, args.title, cuts=cuts, perFile=args.perFile)

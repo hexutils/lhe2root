@@ -78,6 +78,7 @@
 <h1>lhe2root<a class="headerlink" href="#lhe2root" title="Permalink to this heading"></a></h1>
 <div class="toctree-wrapper compound">
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="LHE_Event_Counter.html">LHE_Event_Counter module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="convert_all_to_ROOT.html">convert_all_to_ROOT module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="lhe2root.html">lhe2root module</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="lhe2root.html#lhe2root.Event"><code class="docutils literal notranslate"><span class="pre">Event</span></code></a><ul>
@@ -93,20 +94,30 @@
 <li class="toctree-l3"><a class="reference internal" href="lhe2root.html#lhe2root.LHEEvent_Offshell4l.nassociatedparticles"><code class="docutils literal notranslate"><span class="pre">LHEEvent_Offshell4l.nassociatedparticles</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="lhe2root.html#lhe2root.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="lhe2root.html#lhe2root.tlvfromptetaphim"><code class="docutils literal notranslate"><span class="pre">tlvfromptetaphim()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="lhe2root_methods.html">lhe2root_methods module</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="lhe2root_methods.html#lhe2root_methods.check_for_MELA"><code class="docutils literal notranslate"><span class="pre">check_for_MELA()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="lhe2root_methods.html#lhe2root_methods.get_cross_section_from_LHE_file"><code class="docutils literal notranslate"><span class="pre">get_cross_section_from_LHE_file()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lhe2root_methods.html#lhe2root_methods.cut_ranges_to_dict"><code class="docutils literal notranslate"><span class="pre">cut_ranges_to_dict()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="lhe2root_methods.html#lhe2root_methods.plot_interference"><code class="docutils literal notranslate"><span class="pre">plot_interference()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="lhe2root_methods.html#lhe2root_methods.plot_one_quantity"><code class="docutils literal notranslate"><span class="pre">plot_one_quantity()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="lhe2root_methods.html#lhe2root_methods.recursively_convert"><code class="docutils literal notranslate"><span class="pre">recursively_convert()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="lhe2root_methods.html#lhe2root_methods.scale"><code class="docutils literal notranslate"><span class="pre">scale()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="lhe_constants.html">lhe_constants module</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="lhe_constants.html#lhe_constants.print_msg_box"><code class="docutils literal notranslate"><span class="pre">print_msg_box()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="lhe_reader.html">lhe_reader module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="lhe_reader.html#lhe_reader.lhe_reader"><code class="docutils literal notranslate"><span class="pre">lhe_reader</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lhe_reader.html#lhe_reader.lhe_reader.__eq__"><code class="docutils literal notranslate"><span class="pre">lhe_reader.__eq__()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lhe_reader.html#lhe_reader.lhe_reader.__str__"><code class="docutils literal notranslate"><span class="pre">lhe_reader.__str__()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lhe_reader.html#lhe_reader.lhe_reader.all_events"><code class="docutils literal notranslate"><span class="pre">lhe_reader.all_events</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lhe_reader.html#lhe_reader.lhe_reader.cross_section"><code class="docutils literal notranslate"><span class="pre">lhe_reader.cross_section</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lhe_reader.html#lhe_reader.lhe_reader.cut_down_to_size"><code class="docutils literal notranslate"><span class="pre">lhe_reader.cut_down_to_size()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lhe_reader.html#lhe_reader.lhe_reader.non_event_portions"><code class="docutils literal notranslate"><span class="pre">lhe_reader.non_event_portions</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lhe_reader.html#lhe_reader.lhe_reader.num_events"><code class="docutils literal notranslate"><span class="pre">lhe_reader.num_events</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lhe_reader.html#lhe_reader.lhe_reader.to_ROOT"><code class="docutils literal notranslate"><span class="pre">lhe_reader.to_ROOT()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="lhefile.html">lhefile module</a><ul>
@@ -199,12 +210,6 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="lhefile_methods.html">lhefile_methods module</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="lhefile_methods.html#lhefile_methods.cut_down_to_size"><code class="docutils literal notranslate"><span class="pre">cut_down_to_size()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="lhefile_methods.html#lhefile_methods.get_all_events"><code class="docutils literal notranslate"><span class="pre">get_all_events()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="lhefile_methods.html#lhefile_methods.get_non_event_portions"><code class="docutils literal notranslate"><span class="pre">get_non_event_portions()</span></code></a></li>
-</ul>
-</li>
 <li class="toctree-l1"><a class="reference internal" href="plot_interference.html">plot_interference module</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="plot_interference.html#plot_interference.ran"><code class="docutils literal notranslate"><span class="pre">ran()</span></code></a></li>
 </ul>
@@ -214,6 +219,12 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="slice_lhe_files.html">slice_lhe_files module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="useful_funcs_and_constants.html">useful_funcs_and_constants module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="useful_funcs_and_constants.html#useful_funcs_and_constants.check_for_MELA"><code class="docutils literal notranslate"><span class="pre">check_for_MELA()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="useful_funcs_and_constants.html#useful_funcs_and_constants.print_msg_box"><code class="docutils literal notranslate"><span class="pre">print_msg_box()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="useful_funcs_and_constants.html#useful_funcs_and_constants.safely_run_process"><code class="docutils literal notranslate"><span class="pre">safely_run_process()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </div>
 </section>

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>lhe_reader module &mdash; lhe2root  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            lhe2root
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+    
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">lhe_reader module</a><ul>
+<li><a class="reference internal" href="#lhe_reader.lhe_reader"><code class="docutils literal notranslate"><span class="pre">lhe_reader</span></code></a><ul>
+<li><a class="reference internal" href="#lhe_reader.lhe_reader.__eq__"><code class="docutils literal notranslate"><span class="pre">lhe_reader.__eq__()</span></code></a></li>
+<li><a class="reference internal" href="#lhe_reader.lhe_reader.__str__"><code class="docutils literal notranslate"><span class="pre">lhe_reader.__str__()</span></code></a></li>
+<li><a class="reference internal" href="#lhe_reader.lhe_reader.all_events"><code class="docutils literal notranslate"><span class="pre">lhe_reader.all_events</span></code></a></li>
+<li><a class="reference internal" href="#lhe_reader.lhe_reader.cross_section"><code class="docutils literal notranslate"><span class="pre">lhe_reader.cross_section</span></code></a></li>
+<li><a class="reference internal" href="#lhe_reader.lhe_reader.cut_down_to_size"><code class="docutils literal notranslate"><span class="pre">lhe_reader.cut_down_to_size()</span></code></a></li>
+<li><a class="reference internal" href="#lhe_reader.lhe_reader.non_event_portions"><code class="docutils literal notranslate"><span class="pre">lhe_reader.non_event_portions</span></code></a></li>
+<li><a class="reference internal" href="#lhe_reader.lhe_reader.num_events"><code class="docutils literal notranslate"><span class="pre">lhe_reader.num_events</span></code></a></li>
+<li><a class="reference internal" href="#lhe_reader.lhe_reader.to_ROOT"><code class="docutils literal notranslate"><span class="pre">lhe_reader.to_ROOT()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+    <a href="index.html">Home Page</a>
+    <a href="genindex.html">Index</a>
+    <a href="py-modindex.html">Module Index</a>
+    <a href="https://github.com/hexutils/lhe2root">Github Page</a>
+  
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">lhe2root</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">lhe_reader module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/lhe_reader.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-lhe_reader">
+<span id="lhe-reader-module"></span><h1>lhe_reader module<a class="headerlink" href="#module-lhe_reader" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="lhe_reader.lhe_reader">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lhe_reader.</span></span><span class="sig-name descname"><span class="pre">lhe_reader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lhefile</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lhe_reader.html#lhe_reader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lhe_reader.lhe_reader" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>A class to read LHE files and perform cursory operations like
+cutting down to size, checking equality, and ROOT conversion</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>lhefile</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the .lhe file you are using</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#FileNotFoundError" title="(in Python v3.11)"><strong>FileNotFoundError</strong></a> – Filename should have the .lhe extension</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="lhe_reader.lhe_reader.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_lhe_reader__o</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lhe_reader.html#lhe_reader.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lhe_reader.lhe_reader.__eq__" title="Permalink to this definition"></a></dt>
+<dd><p>Defines a metric for equality between two LHE files</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>__o</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><em>object</em></a>) – Some other object - only useful if it’s another LHE_reader class</p></li>
+<li><p><strong>_lhe_reader__o</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><em>object</em></a>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Whether the events are the same</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lhe_reader.lhe_reader.__str__">
+<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/lhe_reader.html#lhe_reader.__str__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lhe_reader.lhe_reader.__str__" title="Permalink to this definition"></a></dt>
+<dd><p>Function toString that displays the number of events and the cross section of an LHE file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the string representation of the class</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="lhe_reader.lhe_reader.all_events">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">all_events</span></span><a class="headerlink" href="#lhe_reader.lhe_reader.all_events" title="Permalink to this definition"></a></dt>
+<dd><p>This function opens and collects every LHE event and puts them in a list to return
+Attribute is stored as a cached property
+<a class="reference external" href="https://docs.python.org/dev/library/functools.html#functools.cached_property">https://docs.python.org/dev/library/functools.html#functools.cached_property</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of every event sequence as strings from the file (everything between every &lt;event&gt; and &lt;/event&gt;)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.11)">list</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="lhe_reader.lhe_reader.cross_section">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cross_section</span></span><a class="headerlink" href="#lhe_reader.lhe_reader.cross_section" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the cross section and its uncertainty using regular expressions
+<a class="reference external" href="https://docs.python.org/dev/library/functools.html#functools.cached_property">https://docs.python.org/dev/library/functools.html#functools.cached_property</a>
+:returns: A tuple of strings containing the cross section and its uncertainty
+:rtype: Tuple[str, str]</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lhe_reader.lhe_reader.cut_down_to_size">
+<span class="sig-name descname"><span class="pre">cut_down_to_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shuffled</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dump</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lhe_reader.html#lhe_reader.cut_down_to_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lhe_reader.lhe_reader.cut_down_to_size" title="Permalink to this definition"></a></dt>
+<dd><p>Cuts the number of events in an LHE file down to n events while preserving other aspects of the file
+Outputs a string that should be placed in a file of your choice</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – The number of events you want to keep</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether you want the function to be verbose, by default False</p></li>
+<li><p><strong>shuffled</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether you want the lhe files to be shuffled before sampling them, by default False</p></li>
+<li><p><strong>dump</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>, </em><em>optional</em>) – Place a filename here WITHOUT the .lhe extension if you want to dump the sliced file with the filename of dump, by default “”</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A string that should be passed to a file of the LHE file</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.11)"><strong>TypeError</strong></a> – n should have the ability to become an integer</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.11)"><strong>ValueError</strong></a> – n must be &gt; 0</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="lhe_reader.lhe_reader.non_event_portions">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">non_event_portions</span></span><a class="headerlink" href="#lhe_reader.lhe_reader.non_event_portions" title="Permalink to this definition"></a></dt>
+<dd><p>This function gets everything in an LHE file that is not an event
+(everything before the first &lt;event&gt; and everything after the last &lt;/event&gt;)
+<a class="reference external" href="https://docs.python.org/dev/library/functools.html#functools.cached_property">https://docs.python.org/dev/library/functools.html#functools.cached_property</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Two strings of everything before the first &lt;event&gt; and everything after the last &lt;/event&gt;</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="lhe_reader.lhe_reader.num_events">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_events</span></span><a class="headerlink" href="#lhe_reader.lhe_reader.num_events" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the number of events in the file as a cached property
+<a class="reference external" href="https://docs.python.org/dev/library/functools.html#functools.cached_property">https://docs.python.org/dev/library/functools.html#functools.cached_property</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The number of events in the LHE file</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lhe_reader.lhe_reader.to_ROOT">
+<span class="sig-name descname"><span class="pre">to_ROOT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">argument</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">other_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'./'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'LHE'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lhe_reader.html#lhe_reader.to_ROOT"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lhe_reader.lhe_reader.to_ROOT" title="Permalink to this definition"></a></dt>
+<dd><p>Converts a single LHE file to ROOT using the lhe2root tool
+This works best for Higgs-&gt;4l of some kind, as that is what lhe2root is made for</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>argument</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – This should be one of the viable lhe2root options</p></li>
+<li><p><strong>env</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.11)"><em>dict</em></a>) – This contains the lhe2root environment variables by doing dict(os.environ) in a main method</p></li>
+<li><p><strong>other_args</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.11)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>]</em>) – The other lhe2root arguments that can be used (see lhe_2_root_args in useful_funcs_and_constants), by default []</p></li>
+<li><p><strong>output_directory</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>, </em><em>optional</em>) – The directory to output the ROOT file to, by default ‘./’</p></li>
+<li><p><strong>output_prefix</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>, </em><em>optional</em>) – The prefix attached to the ROOT file, by default ‘<a href="#id1"><span class="problematic" id="id2">LHE_</span></a>’</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a><em>, </em><em>optional</em>) – If false, all output is suppressed, by default False</p></li>
+<li><p><strong>replace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a><em>, </em><em>optional</em>) – If true, when an identical ROOT file is found it will overwrite the file, by default False</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#FileNotFoundError" title="(in Python v3.11)"><strong>FileNotFoundError</strong></a> – MELA pathways should be configured to use LHE2ROOT</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.11)"><strong>ValueError</strong></a> – One of the specified lhe2root configurations should be used</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.11)"><strong>ValueError</strong></a> – One of the specified lhe2root arguments should be used</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#FileNotFoundError" title="(in Python v3.11)"><strong>FileNotFoundError</strong></a> – The output directory should be a valid directory</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.11)"><strong>TypeError</strong></a> – The environment variables should be a dictionary</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, HexUtils.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

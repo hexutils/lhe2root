@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>lhe_reader &mdash; lhe2root  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            lhe2root
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+    
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+    <a href="index.html">Home Page</a>
+    <a href="genindex.html">Index</a>
+    <a href="py-modindex.html">Module Index</a>
+    <a href="https://github.com/hexutils/lhe2root">Github Page</a>
+  
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">lhe2root</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">lhe_reader</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for lhe_reader</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">useful_funcs_and_constants</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<div class="viewcode-block" id="lhe_reader"><a class="viewcode-back" href="../lhe_reader.html#lhe_reader.lhe_reader">[docs]</a><span class="k">class</span> <span class="nc">lhe_reader</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lhefile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A class to read LHE files and perform cursory operations like </span>
+<span class="sd">        cutting down to size, checking equality, and ROOT conversion</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        lhefile : str</span>
+<span class="sd">            the .lhe file you are using</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        FileNotFoundError</span>
+<span class="sd">            Filename should have the .lhe extension</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">lhefile</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;lhe&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;LHE File Extension Required for file &quot;</span> <span class="o">+</span> <span class="n">lhefile</span> <span class="o">+</span> <span class="s2">&quot;!&quot;</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">lhefile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">lhefile</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">event_selection_regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(?s)(&lt;event&gt;(.*?)&lt;/event&gt;)&#39;</span><span class="p">)</span> <span class="c1">#regular expression to find every event</span>
+        
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lhefile</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">cached_property</span> 
+    <span class="k">def</span> <span class="nf">cross_section</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the cross section and its uncertainty using regular expressions</span>
+<span class="sd">        https://docs.python.org/dev/library/functools.html#functools.cached_property</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Tuple[str, str]</span>
+<span class="sd">            A tuple of strings containing the cross section and its uncertainty</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">cross_section</span> <span class="o">=</span> <span class="n">uncertainty</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        
+        <span class="c1"># with open(self.lhefile) as getting_cross_section:</span>
+        <span class="n">head</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">non_event_portions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c1">#The part before the events contains the cross section</span>
+        
+        <span class="c1">#This regex was made by the very very helpful https://pythex.org/ (shoutout UVA professor Upsorn Praphamontripong)</span>
+        <span class="n">cross_finder</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;&lt;init&gt;\n.+\n.+(\d+\.\d+E(\+|-)\d</span><span class="si">{2}</span><span class="s1">)\s+(\d+\.\d+E(\+|-)\d</span><span class="si">{2}</span><span class="s1">)\s+(\d+\.\d+E(\+|-)\d</span><span class="si">{2}</span><span class="s1">)(\d|\s)+&lt;/init&gt;&#39;</span><span class="p">)</span>
+        <span class="n">cross_section_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">cross_finder</span><span class="p">,</span><span class="n">head</span><span class="p">)</span>
+        
+        <span class="n">cross_section</span> <span class="o">=</span> <span class="n">cross_section_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        
+        <span class="n">uncertainty</span> <span class="o">=</span> <span class="n">cross_section_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">cross_section</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">uncertainty</span><span class="p">)</span> <span class="c1">#returns the cross section and its uncertainty</span>
+    
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">cached_property</span> 
+    <span class="k">def</span> <span class="nf">all_events</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;This function opens and collects every LHE event and puts them in a list to return</span>
+<span class="sd">        Attribute is stored as a cached property</span>
+<span class="sd">        https://docs.python.org/dev/library/functools.html#functools.cached_property</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list[str]</span>
+<span class="sd">            A list of every event sequence as strings from the file (everything between every &lt;event&gt; and &lt;/event&gt;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">all_matches</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">event_selection_regex</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+        <span class="n">all_matches</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">all_matches</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">all_matches</span>
+    
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">cached_property</span>
+    <span class="k">def</span> <span class="nf">num_events</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the number of events in the file as a cached property</span>
+<span class="sd">        https://docs.python.org/dev/library/functools.html#functools.cached_property</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            The number of events in the LHE file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_events</span><span class="p">)</span>
+        
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">cached_property</span>
+    <span class="k">def</span> <span class="nf">non_event_portions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;This function gets everything in an LHE file that is not an event </span>
+<span class="sd">        (everything before the first &lt;event&gt; and everything after the last &lt;/event&gt;)</span>
+<span class="sd">        https://docs.python.org/dev/library/functools.html#functools.cached_property</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Tuple[str, str]</span>
+<span class="sd">            Two strings of everything before the first &lt;event&gt; and everything after the last &lt;/event&gt;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">f_start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;&lt;event&gt;&quot;</span><span class="p">)]</span> <span class="c1">#everything until the first event</span>
+        <span class="n">f_end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s2">&quot;&lt;/event&gt;&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="s2">&quot;&lt;/event&gt;&quot;</span><span class="p">):]</span> <span class="c1">#everything after the last event</span>
+        <span class="k">return</span> <span class="n">f_start</span><span class="p">,</span> <span class="n">f_end</span>
+
+<div class="viewcode-block" id="lhe_reader.__eq__"><a class="viewcode-back" href="../lhe_reader.html#lhe_reader.lhe_reader.__eq__">[docs]</a>    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__o</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Defines a metric for equality between two LHE files</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        __o : object</span>
+<span class="sd">            Some other object - only useful if it&#39;s another LHE_reader class</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            Whether the events are the same</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">__o</span><span class="p">,</span> <span class="n">lhe_reader</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_events</span> <span class="o">==</span> <span class="n">__o</span><span class="o">.</span><span class="n">all_events</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        
+        <span class="k">return</span> <span class="kc">False</span></div>
+     
+<div class="viewcode-block" id="lhe_reader.__str__"><a class="viewcode-back" href="../lhe_reader.html#lhe_reader.lhe_reader.__str__">[docs]</a>    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function toString that displays the number of events and the cross section of an LHE file</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            the string representation of the class</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">to_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">to_str</span> <span class="o">+=</span> <span class="s2">&quot;LHE file &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">lhefile</span>
+        <span class="n">to_str</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n\t</span><span class="s2">N: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_events</span><span class="p">)</span>
+        <span class="n">to_str</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n\t\u03C3</span><span class="s2">: &quot;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="si">{:e}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cross_section</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="c1">#\u03C3 is the unicode for sigma</span>
+        <span class="k">return</span> <span class="n">to_str</span></div>
+
+<div class="viewcode-block" id="lhe_reader.cut_down_to_size"><a class="viewcode-back" href="../lhe_reader.html#lhe_reader.lhe_reader.cut_down_to_size">[docs]</a>    <span class="k">def</span> <span class="nf">cut_down_to_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">shuffled</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dump</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Cuts the number of events in an LHE file down to n events while preserving other aspects of the file</span>
+<span class="sd">        Outputs a string that should be placed in a file of your choice</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n : int</span>
+<span class="sd">            The number of events you want to keep</span>
+<span class="sd">        verbose : bool, optional</span>
+<span class="sd">            Whether you want the function to be verbose, by default False</span>
+<span class="sd">        shuffled : bool, optional</span>
+<span class="sd">            Whether you want the lhe files to be shuffled before sampling them, by default False</span>
+<span class="sd">        dump : str, optional</span>
+<span class="sd">            Place a filename here WITHOUT the .lhe extension if you want to dump the sliced file with the filename of dump, by default &quot;&quot;</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            A string that should be passed to a file of the LHE file</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            n should have the ability to become an integer</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            n must be &gt; 0</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">start_of_file</span><span class="p">,</span> <span class="n">end_of_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">non_event_portions</span>
+        
+        <span class="n">orig_num</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_events</span><span class="p">)</span> <span class="c1">#this is a sneaky way to also enforce that all the events are precomputed here</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;n should be integer-like!&quot;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="n">orig_num</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">start_of_file</span> <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_events</span><span class="p">))</span> <span class="o">+</span> <span class="n">end_of_file</span>
+        <span class="k">elif</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="n">orig_num</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;The number of events selected is &gt; the number of events in the file&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">start_of_file</span> <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_events</span><span class="p">))</span> <span class="o">+</span> <span class="n">end_of_file</span> <span class="c1">#just return the whole file</span>
+        <span class="k">elif</span> <span class="n">n</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Selecting &lt;= 0 events makes literally no sense&quot;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{:.3e}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">orig_num</span><span class="p">),</span> <span class="s2">&quot;events -&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{:.3e}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="s2">&quot;events&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Shuffling is turned&quot;</span><span class="p">,</span> <span class="s2">&quot;on&quot;</span> <span class="k">if</span> <span class="n">shuffled</span> <span class="k">else</span> <span class="s2">&quot;off&quot;</span><span class="p">)</span>
+            
+        <span class="n">cut_down</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_events</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span> <span class="k">if</span> <span class="n">shuffled</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_events</span><span class="p">[:</span><span class="n">n</span><span class="p">]</span>
+        
+        <span class="n">written_file</span> <span class="o">=</span> <span class="n">start_of_file</span> <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cut_down</span><span class="p">))</span> <span class="o">+</span> <span class="n">end_of_file</span>
+        
+        <span class="k">if</span> <span class="n">dump</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">dump</span> <span class="o">+</span> <span class="s1">&#39;.lhe&#39;</span><span class="p">):</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">dump</span><span class="o">+</span><span class="s1">&#39;.lhe&#39;</span><span class="p">,</span> <span class="s1">&#39;w+&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">written_file</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">dump</span> <span class="o">+</span> <span class="s1">&#39;.lhe&#39;</span><span class="p">):</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">+</span><span class="n">dump</span> <span class="o">+</span> <span class="s1">&#39;.lhe already exists! Not dumping file.</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="ne">UserWarning</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">written_file</span> <span class="c1">#this would be placed directly into a file</span></div>
+    
+    
+<div class="viewcode-block" id="lhe_reader.to_ROOT"><a class="viewcode-back" href="../lhe_reader.html#lhe_reader.lhe_reader.to_ROOT">[docs]</a>    <span class="k">def</span> <span class="nf">to_ROOT</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argument</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">other_args</span><span class="o">=</span><span class="p">[],</span> <span class="n">output_directory</span><span class="o">=</span><span class="s1">&#39;./&#39;</span><span class="p">,</span> <span class="n">output_prefix</span><span class="o">=</span><span class="s1">&#39;LHE&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">,):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Converts a single LHE file to ROOT using the lhe2root tool</span>
+<span class="sd">        This works best for Higgs-&gt;4l of some kind, as that is what lhe2root is made for</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        argument : str</span>
+<span class="sd">            This should be one of the viable lhe2root options</span>
+<span class="sd">        env : dict</span>
+<span class="sd">            This contains the lhe2root environment variables by doing dict(os.environ) in a main method</span>
+<span class="sd">        other_args : list[str]</span>
+<span class="sd">            The other lhe2root arguments that can be used (see lhe_2_root_args in useful_funcs_and_constants), by default []</span>
+<span class="sd">        output_directory : str, optional</span>
+<span class="sd">            The directory to output the ROOT file to, by default &#39;./&#39;</span>
+<span class="sd">        output_prefix : str, optional</span>
+<span class="sd">            The prefix attached to the ROOT file, by default &#39;LHE_&#39;</span>
+<span class="sd">        verbose : bool, optional</span>
+<span class="sd">            If false, all output is suppressed, by default False</span>
+<span class="sd">        replace : bool, optional</span>
+<span class="sd">            If true, when an identical ROOT file is found it will overwrite the file, by default False</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        FileNotFoundError</span>
+<span class="sd">            MELA pathways should be configured to use LHE2ROOT</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            One of the specified lhe2root configurations should be used</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            One of the specified lhe2root arguments should be used</span>
+<span class="sd">        FileNotFoundError</span>
+<span class="sd">            The output directory should be a valid directory</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            The environment variables should be a dictionary</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">useful_funcs_and_constants</span><span class="o">.</span><span class="n">check_for_MELA</span><span class="p">(</span><span class="n">env</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;MELA Path not found in given environment!&quot;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">argument</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">useful_funcs_and_constants</span><span class="o">.</span><span class="n">lhe_2_root_options</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid LHE2ROOT option!&quot;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">other_args</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Other arguments being used:&quot;</span><span class="p">,</span> <span class="n">other_args</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">other_args</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">arg</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">useful_funcs_and_constants</span><span class="o">.</span><span class="n">lhe_2_root_args</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid LHE2ROOT option!&quot;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">output_directory</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;Output Directory is invalid!&quot;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Environment should be a dictionary i.e. dict(os.environ)&quot;</span><span class="p">)</span>
+        
+        <span class="n">output_directory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">output_directory</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">output_directory</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
+            <span class="n">output_directory</span> <span class="o">+=</span> <span class="s1">&#39;/&#39;</span>
+        
+        <span class="n">input_filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lhefile</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">output_filename</span> <span class="o">=</span> <span class="n">output_prefix</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">input_filename</span><span class="p">[:</span><span class="n">input_filename</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)]</span> <span class="o">+</span> <span class="s1">&#39;.root&#39;</span>
+        
+        <span class="n">outfile</span> <span class="o">=</span> <span class="n">output_directory</span> <span class="o">+</span> <span class="n">output_filename</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">outfile</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s2">&quot;already exists!&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">replace</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;replacing&quot;</span><span class="p">,</span> <span class="n">outfile</span><span class="p">)</span>
+                <span class="n">useful_funcs_and_constants</span><span class="o">.</span><span class="n">safely_run_process</span><span class="p">(</span><span class="s2">&quot;rm &quot;</span> <span class="o">+</span> <span class="n">output_directory</span> <span class="o">+</span> <span class="n">output_filename</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">outfile</span>
+        
+        <span class="n">titlestr</span> <span class="o">=</span> <span class="s2">&quot;Generating ROOT file for &quot;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lhefile</span><span class="p">)</span>
+        
+        <span class="n">useful_funcs_and_constants</span><span class="o">.</span><span class="n">print_msg_box</span><span class="p">(</span><span class="s2">&quot;Input name: &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">lhefile</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="c1">#This is the big message box seen per LHE file found</span>
+            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Output: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="n">outfile</span><span class="p">))</span> <span class="o">+</span> 
+            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Arguments: &quot;</span> <span class="o">+</span> <span class="n">argument</span> <span class="o">+</span>
+            <span class="p">(</span><span class="s2">&quot;, &quot;</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">other_args</span><span class="p">)</span> <span class="k">if</span> <span class="n">other_args</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">+</span>
+            <span class="s2">&quot;</span><span class="se">\n\u03C3</span><span class="s2">: &quot;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="si">{:.4e}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cross_section</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot; </span><span class="se">\u00b1</span><span class="s2"> &quot;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="si">{:.2e}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cross_section</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> 
+            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">N: &quot;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="si">{:.4e}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_events</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; events&quot;</span><span class="p">,</span>
+            <span class="n">title</span><span class="o">=</span><span class="n">titlestr</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">titlestr</span><span class="p">))</span>
+        
+        <span class="kn">import</span> <span class="nn">lhe2root</span>
+        
+        <span class="n">argList</span> <span class="o">=</span> <span class="p">[</span><span class="n">output_directory</span> <span class="o">+</span> <span class="n">output_filename</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lhefile</span><span class="p">,</span> <span class="s1">&#39;--&#39;</span> <span class="o">+</span> <span class="n">argument</span><span class="p">]</span>
+        <span class="n">argList</span> <span class="o">+=</span> <span class="s1">&#39;--&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">other_args</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">argList</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;--verbose&#39;</span><span class="p">]</span>
+        
+        <span class="nb">print</span><span class="p">(</span><span class="n">argList</span><span class="p">)</span>
+        <span class="n">lhe2root</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">argList</span><span class="p">)</span>
+        <span class="c1"># running_str = &quot;python3 lhe2root.py --&quot; + argument + &quot; &quot; + output_directory + output_filename + &#39; &#39;</span>
+        <span class="c1"># running_str += self.lhefile #lhe2root takes in an argument, the outname, and the input file</span>
+        
+        <span class="c1"># if not verbose:</span>
+        <span class="c1">#     running_str += &#39; &gt; /dev/null 2&gt;&amp;1&#39;</span>
+        
+        
+        <span class="c1"># useful_funcs_and_constants.safely_run_process(running_str, env)</span>
+        
+        <span class="k">return</span> <span class="n">outfile</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, HexUtils.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

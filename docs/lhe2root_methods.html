@@ -43,8 +43,7 @@
               <!-- Local TOC -->
               <div class="local-toc"><ul>
 <li><a class="reference internal" href="#">lhe2root_methods module</a><ul>
-<li><a class="reference internal" href="#lhe2root_methods.check_for_MELA"><code class="docutils literal notranslate"><span class="pre">check_for_MELA()</span></code></a></li>
-<li><a class="reference internal" href="#lhe2root_methods.get_cross_section_from_LHE_file"><code class="docutils literal notranslate"><span class="pre">get_cross_section_from_LHE_file()</span></code></a></li>
+<li><a class="reference internal" href="#lhe2root_methods.cut_ranges_to_dict"><code class="docutils literal notranslate"><span class="pre">cut_ranges_to_dict()</span></code></a></li>
 <li><a class="reference internal" href="#lhe2root_methods.plot_interference"><code class="docutils literal notranslate"><span class="pre">plot_interference()</span></code></a></li>
 <li><a class="reference internal" href="#lhe2root_methods.plot_one_quantity"><code class="docutils literal notranslate"><span class="pre">plot_one_quantity()</span></code></a></li>
 <li><a class="reference internal" href="#lhe2root_methods.recursively_convert"><code class="docutils literal notranslate"><span class="pre">recursively_convert()</span></code></a></li>
@@ -85,32 +84,19 @@
   <section id="module-lhe2root_methods">
 <span id="lhe2root-methods-module"></span><h1>lhe2root_methods module<a class="headerlink" href="#module-lhe2root_methods" title="Permalink to this heading"></a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="lhe2root_methods.check_for_MELA">
-<span class="sig-prename descclassname"><span class="pre">lhe2root_methods.</span></span><span class="sig-name descname"><span class="pre">check_for_MELA</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/lhe2root_methods.html#check_for_MELA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lhe2root_methods.check_for_MELA" title="Permalink to this definition"></a></dt>
-<dd><p>A function that checks whether or not you have the environment variables for MELA set up within your terminal</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A boolean as to whether or not MELA is properly set up</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)">bool</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="lhe2root_methods.get_cross_section_from_LHE_file">
-<span class="sig-prename descclassname"><span class="pre">lhe2root_methods.</span></span><span class="sig-name descname"><span class="pre">get_cross_section_from_LHE_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">LHE_file_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lhe2root_methods.html#get_cross_section_from_LHE_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lhe2root_methods.get_cross_section_from_LHE_file" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the cross section and its uncertainty from a given LHE file using regular expressions</p>
+<dt class="sig sig-object py" id="lhe2root_methods.cut_ranges_to_dict">
+<span class="sig-prename descclassname"><span class="pre">lhe2root_methods.</span></span><span class="sig-name descname"><span class="pre">cut_ranges_to_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cut_ranges</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lhe2root_methods.html#cut_ranges_to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lhe2root_methods.cut_ranges_to_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Takes in cut ranges of triples of style &lt;name&gt;, &lt;upper bound&gt;, &lt;lower bound&gt;
+singular plotting can use. Styled such that a dot indicates that there is no cut.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>LHE_file_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – The file path for the LHE file</p>
+<dd class="field-odd"><p><strong>cut_ranges</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.11)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.11)"><em>list</em></a><em>[</em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>]</em><em>]</em><em>]</em>) – the list of triples generated by args.cut</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A tuple of strings containing the cross section and its uncertainty</p>
+<dd class="field-even"><p>A dictionary of style &lt;cut name&gt;: (&lt;upper bound&gt;, &lt;lower bound&gt;)</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Tuple[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a>]</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.11)">dict</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -137,14 +123,17 @@
 <dd class="field-even"><p>The interference portion between the three plots</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>_type_</p>
+<dd class="field-odd"><p>Tuple(numpy.array)</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.11)"><strong>ValueError</strong></a> – If there is a column listed that is not found</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="lhe2root_methods.plot_one_quantity">
-<span class="sig-prename descclassname"><span class="pre">lhe2root_methods.</span></span><span class="sig-name descname"><span class="pre">plot_one_quantity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filenames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attribute</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xrange</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nbins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lhe2root_methods.html#plot_one_quantity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lhe2root_methods.plot_one_quantity" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">lhe2root_methods.</span></span><span class="sig-name descname"><span class="pre">plot_one_quantity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filenames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attribute</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xrange</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nbins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cuts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perFile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lhe2root_methods.html#plot_one_quantity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lhe2root_methods.plot_one_quantity" title="Permalink to this definition"></a></dt>
 <dd><p>This function plots one quantity of your choice from ROOT files!</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -156,6 +145,8 @@
 <li><p><strong>labels</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.11)"><em>list</em></a><em>, </em><em>optional</em>) – The labels for each file plotted, by default []</p></li>
 <li><p><strong>norm</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to normalize the plotting areas to 1 for easier comparison, by default False</p></li>
 <li><p><strong>title</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>, </em><em>optional</em>) – An extra “title” on the x label that is concatenated, by default “”</p></li>
+<li><p><strong>cuts</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.11)"><em>dict</em></a>) – A dictionary containing the upper and lower level cuts that you are making on each quantity, by default {}</p></li>
+<li><p><strong>perFile</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – Whether you want to have a single plot for each file, by default False</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -175,24 +166,25 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="lhe2root_methods.recursively_convert">
-<span class="sig-prename descclassname"><span class="pre">lhe2root_methods.</span></span><span class="sig-name descname"><span class="pre">recursively_convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">argument</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exceptions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lhe2root_methods.html#recursively_convert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lhe2root_methods.recursively_convert" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">lhe2root_methods.</span></span><span class="sig-name descname"><span class="pre">recursively_convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">argument</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">other_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exceptions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outfile_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'LHE'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut_down_to</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lhe2root_methods.html#recursively_convert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lhe2root_methods.recursively_convert" title="Permalink to this definition"></a></dt>
 <dd><p>This function will recurse through every directory and subdirectory in the place you call it,
 and attempt to convert those files to ROOT files using lhe2root</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><strong>env</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.11)"><em>dict</em></a>) – This contains the lhe2root environment variables by doing dict(os.environ) in a main method</p></li>
 <li><p><strong>current_directory</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – The directory to start recursing downwards from</p></li>
 <li><p><strong>output_directory</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – The directory to output results to</p></li>
-<li><p><strong>argument</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the lhe2root argument to use (see lhe_2_root_options in lhe_constants)</p></li>
+<li><p><strong>argument</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – the lhe2root conversion option to use (see lhe_2_root_options in useful_funcs_and_constants)</p></li>
+<li><p><strong>other_args</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.11)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>]</em>) – The other lhe2root arguments that can be used (see lhe_2_root_args in useful_funcs_and_constants), by default []</p></li>
 <li><p><strong>clean</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, this function will wipe any old conversion and re-convert the files, by default False</p></li>
 <li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a><em>, </em><em>optional</em>) – If true, the function will be verbose, by default False</p></li>
-<li><p><strong>exceptions</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.11)"><em>set</em></a><em>, </em><em>optional</em>) – <p>Any absolute path with this string in it will be ignored, by default set()
-NOTE: This is the case for any string in the path! folders of path &lt;exception&gt;/&lt;other folder&gt; will be ignored</p>
-<blockquote>
-<div><p>The same goes for folders where a substring of the folder matches the name in the exception - useful for catching multiple folders!
-Name your folders carefully!</p>
-</div></blockquote>
-</p></li>
+<li><p><strong>exceptions</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.11)"><em>set</em></a><em>, </em><em>optional</em>) – Any absolute path with this string in it will be ignored, by default set()
+NOTE: This is the case for any string in the path! folders of path &lt;exception&gt;/&lt;other folder&gt; will be ignored
+The same goes for folders where a substring of the folder matches the name in the exception - useful for catching multiple folders!
+Name your folders carefully!</p></li>
+<li><p><strong>outfile_prefix</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>, </em><em>optional</em>) – The prefix to attach to the generated ROOT files, by default “LHE”</p></li>
+<li><p><strong>cut_down_to</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a><em>, </em><em>optional</em>) – The number of events you want in the LHE file before converting. Negative numbers mean all events will be kept, by default -1</p></li>
 <li><p><strong>write</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>, </em><em>optional</em>) – If a string, this will be the file that you will write the cross sections to. The file will be comma-separated, by default “”</p></li>
 </ul>
 </dd>
@@ -210,13 +202,14 @@ Name your folders carefully!</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="lhe2root_methods.scale">
-<span class="sig-prename descclassname"><span class="pre">lhe2root_methods.</span></span><span class="sig-name descname"><span class="pre">scale</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">counts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaleto</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lhe2root_methods.html#scale"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lhe2root_methods.scale" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">lhe2root_methods.</span></span><span class="sig-name descname"><span class="pre">scale</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scaleto</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">counts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lhe2root_methods.html#scale"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lhe2root_methods.scale" title="Permalink to this definition"></a></dt>
 <dd><p>This function scales histograms according to their absolute area under the curve (no negatives allowed!)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>counts</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.11)"><em>list</em></a><em>[</em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>]</em><em>]</em>) – A list of bin counts</p></li>
 <li><p><strong>scaleto</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – The absolute area to scale to</p></li>
+<li><p><strong>counts</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.11)"><em>list</em></a><em>[</em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>]</em><em>]</em>) – A list of bin counts</p></li>
+<li><p><strong>bins</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.11)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>]</em>) – The bins you want to use; use this option if you are passing a numpy histogram in, by default []</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

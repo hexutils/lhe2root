@@ -2,7 +2,7 @@ import argparse
 import lhe2root_methods
 import mplhep as hep
 import matplotlib.pyplot as plt
-import lhe_constants
+import useful_funcs_and_constants
 
 
 def ran(s):
@@ -36,7 +36,7 @@ if __name__ == "__main__":
     parser.add_argument('-csf', '--crossSectionFile', default="CrossSections.csv",
                         help="The name of the file containing the cross sections for your data")
 
-    parser.add_argument('-v','--value',default='M4L', choices=list(lhe_constants.beautified_title.keys()),
+    parser.add_argument('-v','--value', default='M4L', choices=list(useful_funcs_and_constants.beautified_title.keys()),
                         help="The attributes you want to plot.")
 
     parser.add_argument('-r','--range', default=(6,9), type=ran,
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     parser.add_argument('-no', '--norm', action="store_true",
                         help="Option to normalize the area of the histogram to 1")
 
-    parser.add_argument('-t', '--titles', default="", nargs="+",
+    parser.add_argument('-t', '--titles', default=[""], nargs="+",
                         help="Optional Figure Title")
 
     args = parser.parse_args()
@@ -64,6 +64,7 @@ if __name__ == "__main__":
             except:
                 continue #skips any possible headers in the .csv file
     
+    print(CrossSections)
     for (interefence_triplet, title) in zip(args.filenames, args.titles):
         interf_plots[title] = lhe2root_methods.plot_interference(*interefence_triplet, *args.labels, args.value, CrossSections,
                                                                 nbins=args.nbins, title=title)
@@ -73,6 +74,7 @@ if __name__ == "__main__":
         hep.histplot(scaled, interf_plots[sample][1], label=sample)
     
     plt.legend()
-    plt.xlabel(args.value)
+    plt.xlabel(useful_funcs_and_constants.beautified_title[args.value])
     plt.tight_layout()
-    plt.show()
+    plt.savefig('question.png')
+    # plt.show()

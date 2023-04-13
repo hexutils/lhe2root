@@ -3,9 +3,143 @@ import abc
 import collections
 import re
 import argparse, os
+from array import array
+import itertools
+import numpy as np
+import sys
+
+import ROOT
+
+from lhefile import LHEFile_JHUGenVBFVH, LHEFile_Hwithdecay, LHEFile_VHHiggsdecay,LHEFile_HwithdecayOnly, LHEFile_Offshell4l,LHEFile_StableHiggs,LHEFile_StableHiggsZHHAWK,LHEFile_StableHiggsVH
+from mela import Mela, SimpleParticle_t, SimpleParticleCollection_t, TVar
+from pythonmelautils import MultiDimensionalCppArray, SelfDParameter, SelfDCoupling
+
+def tlvfromptetaphim(pt, eta, phi, m):
+  result = ROOT.TLorentzVector()
+  result.SetPtEtaPhiM(pt, eta, phi, m)
+  return result
+
+class Event(object):
+  doneinit = False
+  def __init__(self, mela, daughters, associated, mothers, isgen, weight=1):
+    self.daughters = daughters
+    self.associated = associated
+    self.mothers = mothers
+    self.isgen = isgen
+    self.weight = weight
+    self.mela = mela
+    self.mela.setInputEvent(daughters, associated, mothers, isgen)
+    self.doneinit = True
+
+  def __getattr__(self, attr):
+    return getattr(self.mela, attr)
+
+  def __setattr__(self, attr, value):
+    if self.doneinit:
+      return setattr(self.mela, attr, value)
+    return super(Event, self).__setattr__(attr, value)
 
 
-if __name__ == "__main__":
+
+class LHEEvent(object, metaclass=abc.ABCMeta):
+  def __init__(self, event, isgen):
+    """A class for a single LHE event in a file
+
+    Parameters
+    ----------
+    event : str
+        The string consisting of a single event between <event> and </event>
+    isgen : bool
+        Whether it was a generation quantity
+
+    Raises
+    ------
+    ValueError
+        Raises when the number of particles is wrong in the event
+    """
+    lines = event.split("\n")
+
+    self.weights = {}
+    for line in lines:
+      if "<wgt" not in line: continue
+      match = re.match("<wgt id='(.*)'>([0-9+Ee.-]*)</wgt>", line)
+      if match: self.weights[match.group(1)] = float(match.group(2))
+    lines = [line for line in lines if not ("<" in line or ">" in line or not line.split("#")[0].strip())]
+    nparticles, _, weight, _, _, _ = lines[0].split()
+
+    nparticles = int(nparticles)
+    self.weight = float(weight)
+    if nparticles != len(lines)-1:
+      raise ValueError("Wrong number of particles! Should be {}, have {}".format(nparticles, len(lines)-1))
+
+    daughters, associated, mothers = (SimpleParticleCollection_t(_) for _ in self.extracteventparticles(lines[1:], isgen))
+    if not list(mothers): mothers = None
+    self.daughters, self.associated, self.mothers, self.isgen = self.inputevent = InputEvent(daughters, associated, mothers, isgen)
+
+  @abc.abstractmethod
+  def extracteventparticles(cls, lines, isgen): "has to be a classmethod that returns daughters, associated, mothers"
+
+  def __iter__(self):
+    return iter(self.inputevent)
+
+
+class LHEEvent_Offshell4l(LHEEvent):
+  @classmethod
+  def extracteventparticles(cls, lines, isgen):
+    daughters, mothers, associated = [], [], []
+
+    for line in lines:
+      id, status, mother1, mother2 = (int(_) for _ in line.split()[0:4])
+      if (1 <= abs(id) <= 6 or abs(id) == 21) and not isgen:
+        line = line.replace(str(id), "0", 1)  #replace the first instance of the jet id with 0, which means unknown jet
+      if status == -1:
+        mothers.append(line)
+
+      if ( abs(id) in ( 25) or abs(id) in (25)  ) and status == 1:
+        daughters.append(line)
+        print("added daught")
+        flav4l = flav4l*abs(id)
+
+        #      if ( abs(id) in (11, 12, 13, 14, 15, 16) or abs(id) in (1, 2, 3, 4, 5)  ) and status == 1:
+        #       daughters.append(line)
+        #       flav4l = flav4l*abs(id)
+      #if abs(id) in (0, 1, 2, 3, 4, 5, 21) and status == 1:
+      #  associated.append(line)
+      #if abs(id) in (0, 1, 2, 3, 4, 5, 21) and status == 1:
+      #  associated.append(line)
+
+    #if len(daughters) == 4:
+      #print "flavour comp:",flav4l
+    #if len(daughters) != 4:
+    #  raise ValueError("Wrong number of daughters (expected {}, found {})\n\n".format(4, len(daughters))+"\n".join(lines))
+    if cls.nassociatedparticles is not None and len(associated) != cls.nassociatedparticles:
+      raise ValueError("Wrong number of associated particles (expected {}, found {})\n\n".format(cls.nassociatedparticles, len(associated))+"\n".join(lines))
+    if len(mothers) != 2:
+      raise ValueError("{} mothers in the event??\n\n".format(len(mothers))+"\n".join(lines))
+
+    if not isgen: mothers = None
+    return daughters, associated, mothers
+
+  nassociatedparticles = None
+
+def main(raw_args=None):
+  """This is the main method for lhe2root. It is formatted in this way so that this method
+  is callable by functions in other files! (Namely lhe_reader!)
+
+  Parameters
+  ----------
+  raw_args : list[str], optional
+      Should ANYTHING be placed here that is not None, main will parse the arguments
+      in the provided list of raw_args and use those in the argument parser.
+      Should None be passed, the code will use command line arguments, by default None
+
+  Raises
+  ------
+  IOError
+      If the output file already exists
+  IOError
+      If the output file doesn't exist
+  """
   parser = argparse.ArgumentParser()
   parser.add_argument("outputfile")
   parser.add_argument("inputfile", nargs="+")
@@ -28,11 +162,17 @@ if __name__ == "__main__":
   parser.add_argument("--CJLST", action="store_true")
   parser.add_argument("--MELAcalc", action="store_true")
   parser.add_argument("--reweight-to", choices="fa3-0.5")
-  args = parser.parse_args()
+  parser.add_argument('-v', '--verbose', action="store_true") #if enabled it will be verbose
+  args = parser.parse_args(raw_args) #This allows the parser to take in command line arguments if raw_args=None
 
-  if os.path.exists(args.outputfile): raise IOError(args.outputfile+" already exists")
+  if not args.verbose:
+    f = open(os.devnull, 'w')
+    sys.stdout = f
+  if os.path.exists(args.outputfile): 
+    raise IOError(args.outputfile+" already exists")
   for _ in args.inputfile:
-    if not os.path.exists(_) and not args.CJLST: raise IOError(_+" doesn't exist")
+    if not os.path.exists(_) and not args.CJLST: 
+      raise IOError(_+" doesn't exist")
     
   bad = False
 
@@ -667,107 +807,5 @@ if __name__ == "__main__":
         pass
 
 
-from array import array
-import itertools
-import numpy as np
-
-import ROOT
-
-from lhefile import LHEFile_JHUGenVBFVH, LHEFile_Hwithdecay, LHEFile_VHHiggsdecay,LHEFile_HwithdecayOnly, LHEFile_Offshell4l,LHEFile_StableHiggs,LHEFile_StableHiggsZHHAWK,LHEFile_StableHiggsVH
-from mela import Mela, SimpleParticle_t, SimpleParticleCollection_t, TVar
-from pythonmelautils import MultiDimensionalCppArray, SelfDParameter, SelfDCoupling
-
-
-def tlvfromptetaphim(pt, eta, phi, m):
-  result = ROOT.TLorentzVector()
-  result.SetPtEtaPhiM(pt, eta, phi, m)
-  return result
-
-class Event(object):
-  doneinit = False
-  def __init__(self, mela, daughters, associated, mothers, isgen, weight=1):
-    self.daughters = daughters
-    self.associated = associated
-    self.mothers = mothers
-    self.isgen = isgen
-    self.weight = weight
-    self.mela = mela
-    self.mela.setInputEvent(daughters, associated, mothers, isgen)
-    self.doneinit = True
-
-  def __getattr__(self, attr):
-    return getattr(self.mela, attr)
-
-  def __setattr__(self, attr, value):
-    if self.doneinit:
-      return setattr(self.mela, attr, value)
-    return super(Event, self).__setattr__(attr, value)
-
-
-
-class LHEEvent(object, metaclass=abc.ABCMeta):
-  def __init__(self, event, isgen):
-    lines = event.split("\n")
-
-    self.weights = {}
-    for line in lines:
-      if "<wgt" not in line: continue
-      match = re.match("<wgt id='(.*)'>([0-9+Ee.-]*)</wgt>", line)
-      if match: self.weights[match.group(1)] = float(match.group(2))
-    lines = [line for line in lines if not ("<" in line or ">" in line or not line.split("#")[0].strip())]
-    nparticles, _, weight, _, _, _ = lines[0].split()
-
-    nparticles = int(nparticles)
-    self.weight = float(weight)
-    if nparticles != len(lines)-1:
-      raise ValueError("Wrong number of particles! Should be {}, have {}".format(nparticles, len(lines)-1))
-
-    daughters, associated, mothers = (SimpleParticleCollection_t(_) for _ in self.extracteventparticles(lines[1:], isgen))
-    if not list(mothers): mothers = None
-    self.daughters, self.associated, self.mothers, self.isgen = self.inputevent = InputEvent(daughters, associated, mothers, isgen)
-
-  @abc.abstractmethod
-  def extracteventparticles(cls, lines, isgen): "has to be a classmethod that returns daughters, associated, mothers"
-
-  def __iter__(self):
-    return iter(self.inputevent)
-
-
-class LHEEvent_Offshell4l(LHEEvent):
-  @classmethod
-  def extracteventparticles(cls, lines, isgen):
-    daughters, mothers, associated = [], [], []
-
-    for line in lines:
-      id, status, mother1, mother2 = (int(_) for _ in line.split()[0:4])
-      if (1 <= abs(id) <= 6 or abs(id) == 21) and not isgen:
-        line = line.replace(str(id), "0", 1)  #replace the first instance of the jet id with 0, which means unknown jet
-      if status == -1:
-        mothers.append(line)
-
-      if ( abs(id) in ( 25) or abs(id) in (25)  ) and status == 1:
-        daughters.append(line)
-        print("added daught")
-        flav4l = flav4l*abs(id)
-
-        #      if ( abs(id) in (11, 12, 13, 14, 15, 16) or abs(id) in (1, 2, 3, 4, 5)  ) and status == 1:
-        #       daughters.append(line)
-        #       flav4l = flav4l*abs(id)
-      #if abs(id) in (0, 1, 2, 3, 4, 5, 21) and status == 1:
-      #  associated.append(line)
-      #if abs(id) in (0, 1, 2, 3, 4, 5, 21) and status == 1:
-      #  associated.append(line)
-
-    #if len(daughters) == 4:
-      #print "flavour comp:",flav4l
-    #if len(daughters) != 4:
-    #  raise ValueError("Wrong number of daughters (expected {}, found {})\n\n".format(4, len(daughters))+"\n".join(lines))
-    if cls.nassociatedparticles is not None and len(associated) != cls.nassociatedparticles:
-      raise ValueError("Wrong number of associated particles (expected {}, found {})\n\n".format(cls.nassociatedparticles, len(associated))+"\n".join(lines))
-    if len(mothers) != 2:
-      raise ValueError("{} mothers in the event??\n\n".format(len(mothers))+"\n".join(lines))
-
-    if not isgen: mothers = None
-    return daughters, associated, mothers
-
-  nassociatedparticles = None
+if __name__ == "__main__":
+  main() #runs the lhe2root conversion with raw args

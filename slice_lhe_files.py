@@ -1,5 +1,5 @@
 import argparse
-import lhefile_methods
+import lhe_reader
 
 
 if __name__ == '__main__':
@@ -13,7 +13,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     for file in args.filenames:
-        to_write = lhefile_methods.cut_down_to_size(file, args.num)
+        reader = lhe_reader.lhe_reader(file)
+        to_write = reader.cut_down_to_size(args.num)
         
         filename = file.split('/')[-1]
         filepath = "/".join(file.split('/')[:-1])

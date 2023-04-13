@@ -76,9 +76,143 @@
 <span class="kn">import</span> <span class="nn">collections</span>
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">argparse</span><span class="o">,</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">array</span> <span class="kn">import</span> <span class="n">array</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">import</span> <span class="nn">ROOT</span>
+
+<span class="kn">from</span> <span class="nn">lhefile</span> <span class="kn">import</span> <span class="n">LHEFile_JHUGenVBFVH</span><span class="p">,</span> <span class="n">LHEFile_Hwithdecay</span><span class="p">,</span> <span class="n">LHEFile_VHHiggsdecay</span><span class="p">,</span><span class="n">LHEFile_HwithdecayOnly</span><span class="p">,</span> <span class="n">LHEFile_Offshell4l</span><span class="p">,</span><span class="n">LHEFile_StableHiggs</span><span class="p">,</span><span class="n">LHEFile_StableHiggsZHHAWK</span><span class="p">,</span><span class="n">LHEFile_StableHiggsVH</span>
+<span class="kn">from</span> <span class="nn">mela</span> <span class="kn">import</span> <span class="n">Mela</span><span class="p">,</span> <span class="n">SimpleParticle_t</span><span class="p">,</span> <span class="n">SimpleParticleCollection_t</span><span class="p">,</span> <span class="n">TVar</span>
+<span class="kn">from</span> <span class="nn">pythonmelautils</span> <span class="kn">import</span> <span class="n">MultiDimensionalCppArray</span><span class="p">,</span> <span class="n">SelfDParameter</span><span class="p">,</span> <span class="n">SelfDCoupling</span>
+
+<div class="viewcode-block" id="tlvfromptetaphim"><a class="viewcode-back" href="../lhe2root.html#lhe2root.tlvfromptetaphim">[docs]</a><span class="k">def</span> <span class="nf">tlvfromptetaphim</span><span class="p">(</span><span class="n">pt</span><span class="p">,</span> <span class="n">eta</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+  <span class="n">result</span> <span class="o">=</span> <span class="n">ROOT</span><span class="o">.</span><span class="n">TLorentzVector</span><span class="p">()</span>
+  <span class="n">result</span><span class="o">.</span><span class="n">SetPtEtaPhiM</span><span class="p">(</span><span class="n">pt</span><span class="p">,</span> <span class="n">eta</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="Event"><a class="viewcode-back" href="../lhe2root.html#lhe2root.Event">[docs]</a><span class="k">class</span> <span class="nc">Event</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+  <span class="n">doneinit</span> <span class="o">=</span> <span class="kc">False</span>
+  <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mela</span><span class="p">,</span> <span class="n">daughters</span><span class="p">,</span> <span class="n">associated</span><span class="p">,</span> <span class="n">mothers</span><span class="p">,</span> <span class="n">isgen</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">daughters</span> <span class="o">=</span> <span class="n">daughters</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">associated</span> <span class="o">=</span> <span class="n">associated</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">mothers</span> <span class="o">=</span> <span class="n">mothers</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">isgen</span> <span class="o">=</span> <span class="n">isgen</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">weight</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">mela</span> <span class="o">=</span> <span class="n">mela</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">mela</span><span class="o">.</span><span class="n">setInputEvent</span><span class="p">(</span><span class="n">daughters</span><span class="p">,</span> <span class="n">associated</span><span class="p">,</span> <span class="n">mothers</span><span class="p">,</span> <span class="n">isgen</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">doneinit</span> <span class="o">=</span> <span class="kc">True</span>
+
+  <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mela</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">doneinit</span><span class="p">:</span>
+      <span class="k">return</span> <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mela</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Event</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
 
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+
+<div class="viewcode-block" id="LHEEvent"><a class="viewcode-back" href="../lhe2root.html#lhe2root.LHEEvent">[docs]</a><span class="k">class</span> <span class="nc">LHEEvent</span><span class="p">(</span><span class="nb">object</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span><span class="p">):</span>
+  <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">isgen</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class for a single LHE event in a file</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    event : str</span>
+<span class="sd">        The string consisting of a single event between &lt;event&gt; and &lt;/event&gt;</span>
+<span class="sd">    isgen : bool</span>
+<span class="sd">        Whether it was a generation quantity</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        Raises when the number of particles is wrong in the event</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+      <span class="k">if</span> <span class="s2">&quot;&lt;wgt&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span> <span class="k">continue</span>
+      <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;&lt;wgt id=&#39;(.*)&#39;&gt;([0-9+Ee.-]*)&lt;/wgt&gt;&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+      <span class="k">if</span> <span class="n">match</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">[</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span> <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="s2">&quot;&lt;&quot;</span> <span class="ow">in</span> <span class="n">line</span> <span class="ow">or</span> <span class="s2">&quot;&gt;&quot;</span> <span class="ow">in</span> <span class="n">line</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())]</span>
+    <span class="n">nparticles</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
+    <span class="n">nparticles</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">nparticles</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">weight</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nparticles</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Wrong number of particles! Should be </span><span class="si">{}</span><span class="s2">, have </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nparticles</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="n">daughters</span><span class="p">,</span> <span class="n">associated</span><span class="p">,</span> <span class="n">mothers</span> <span class="o">=</span> <span class="p">(</span><span class="n">SimpleParticleCollection_t</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">extracteventparticles</span><span class="p">(</span><span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">isgen</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">list</span><span class="p">(</span><span class="n">mothers</span><span class="p">):</span> <span class="n">mothers</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">daughters</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">associated</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mothers</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">isgen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputevent</span> <span class="o">=</span> <span class="n">InputEvent</span><span class="p">(</span><span class="n">daughters</span><span class="p">,</span> <span class="n">associated</span><span class="p">,</span> <span class="n">mothers</span><span class="p">,</span> <span class="n">isgen</span><span class="p">)</span>
+
+<div class="viewcode-block" id="LHEEvent.extracteventparticles"><a class="viewcode-back" href="../lhe2root.html#lhe2root.LHEEvent.extracteventparticles">[docs]</a>  <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+  <span class="k">def</span> <span class="nf">extracteventparticles</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">lines</span><span class="p">,</span> <span class="n">isgen</span><span class="p">):</span> <span class="s2">&quot;has to be a classmethod that returns daughters, associated, mothers&quot;</span></div>
+
+  <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inputevent</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LHEEvent_Offshell4l"><a class="viewcode-back" href="../lhe2root.html#lhe2root.LHEEvent_Offshell4l">[docs]</a><span class="k">class</span> <span class="nc">LHEEvent_Offshell4l</span><span class="p">(</span><span class="n">LHEEvent</span><span class="p">):</span>
+<div class="viewcode-block" id="LHEEvent_Offshell4l.extracteventparticles"><a class="viewcode-back" href="../lhe2root.html#lhe2root.LHEEvent_Offshell4l.extracteventparticles">[docs]</a>  <span class="nd">@classmethod</span>
+  <span class="k">def</span> <span class="nf">extracteventparticles</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">lines</span><span class="p">,</span> <span class="n">isgen</span><span class="p">):</span>
+    <span class="n">daughters</span><span class="p">,</span> <span class="n">mothers</span><span class="p">,</span> <span class="n">associated</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+      <span class="nb">id</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">mother1</span><span class="p">,</span> <span class="n">mother2</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">])</span>
+      <span class="k">if</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;=</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">6</span> <span class="ow">or</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span> <span class="o">==</span> <span class="mi">21</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">isgen</span><span class="p">:</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">),</span> <span class="s2">&quot;0&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1">#replace the first instance of the jet id with 0, which means unknown jet</span>
+      <span class="k">if</span> <span class="n">status</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">mothers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+      <span class="k">if</span> <span class="p">(</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span> <span class="ow">in</span> <span class="p">(</span> <span class="mi">25</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">25</span><span class="p">)</span>  <span class="p">)</span> <span class="ow">and</span> <span class="n">status</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">daughters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;added daught&quot;</span><span class="p">)</span>
+        <span class="n">flav4l</span> <span class="o">=</span> <span class="n">flav4l</span><span class="o">*</span><span class="nb">abs</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+
+        <span class="c1">#      if ( abs(id) in (11, 12, 13, 14, 15, 16) or abs(id) in (1, 2, 3, 4, 5)  ) and status == 1:</span>
+        <span class="c1">#       daughters.append(line)</span>
+        <span class="c1">#       flav4l = flav4l*abs(id)</span>
+      <span class="c1">#if abs(id) in (0, 1, 2, 3, 4, 5, 21) and status == 1:</span>
+      <span class="c1">#  associated.append(line)</span>
+      <span class="c1">#if abs(id) in (0, 1, 2, 3, 4, 5, 21) and status == 1:</span>
+      <span class="c1">#  associated.append(line)</span>
+
+    <span class="c1">#if len(daughters) == 4:</span>
+      <span class="c1">#print &quot;flavour comp:&quot;,flav4l</span>
+    <span class="c1">#if len(daughters) != 4:</span>
+    <span class="c1">#  raise ValueError(&quot;Wrong number of daughters (expected {}, found {})\n\n&quot;.format(4, len(daughters))+&quot;\n&quot;.join(lines))</span>
+    <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">nassociatedparticles</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">associated</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">nassociatedparticles</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Wrong number of associated particles (expected </span><span class="si">{}</span><span class="s2">, found </span><span class="si">{}</span><span class="s2">)</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">nassociatedparticles</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">associated</span><span class="p">))</span><span class="o">+</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">))</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">mothers</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> mothers in the event??</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mothers</span><span class="p">))</span><span class="o">+</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">isgen</span><span class="p">:</span> <span class="n">mothers</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">daughters</span><span class="p">,</span> <span class="n">associated</span><span class="p">,</span> <span class="n">mothers</span></div>
+
+  <span class="n">nassociatedparticles</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../lhe2root.html#lhe2root.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">raw_args</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">  </span><span class="sd">&quot;&quot;&quot;This is the main method for lhe2root. It is formatted in this way so that this method</span>
+<span class="sd">  is callable by functions in other files! (Namely lhe_reader!)</span>
+
+<span class="sd">  Parameters</span>
+<span class="sd">  ----------</span>
+<span class="sd">  raw_args : list[str], optional</span>
+<span class="sd">      Should ANYTHING be placed here that is not None, main will parse the arguments</span>
+<span class="sd">      in the provided list of raw_args and use those in the argument parser.</span>
+<span class="sd">      Should None be passed, the code will use command line arguments, by default None</span>
+
+<span class="sd">  Raises</span>
+<span class="sd">  ------</span>
+<span class="sd">  IOError</span>
+<span class="sd">      If the output file already exists</span>
+<span class="sd">  IOError</span>
+<span class="sd">      If the output file doesn&#39;t exist</span>
+<span class="sd">  &quot;&quot;&quot;</span>
   <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
   <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;outputfile&quot;</span><span class="p">)</span>
   <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;inputfile&quot;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">)</span>
@@ -101,11 +235,17 @@
   <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--CJLST&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">)</span>
   <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--MELAcalc&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">)</span>
   <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--reweight-to&quot;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="s2">&quot;fa3-0.5&quot;</span><span class="p">)</span>
-  <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+  <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-v&#39;</span><span class="p">,</span> <span class="s1">&#39;--verbose&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">)</span> <span class="c1">#if enabled it will be verbose</span>
+  <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">raw_args</span><span class="p">)</span> <span class="c1">#This allows the parser to take in command line arguments if raw_args=None</span>
 
-  <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">outputfile</span><span class="p">):</span> <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">outputfile</span><span class="o">+</span><span class="s2">&quot; already exists&quot;</span><span class="p">)</span>
+  <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">devnull</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">f</span>
+  <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">outputfile</span><span class="p">):</span> 
+    <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">outputfile</span><span class="o">+</span><span class="s2">&quot; already exists&quot;</span><span class="p">)</span>
   <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">inputfile</span><span class="p">:</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">CJLST</span><span class="p">:</span> <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="n">_</span><span class="o">+</span><span class="s2">&quot; doesn&#39;t exist&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">CJLST</span><span class="p">:</span> 
+      <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="n">_</span><span class="o">+</span><span class="s2">&quot; doesn&#39;t exist&quot;</span><span class="p">)</span>
     
   <span class="n">bad</span> <span class="o">=</span> <span class="kc">False</span>
 
@@ -737,113 +877,11 @@
       <span class="k">try</span><span class="p">:</span>
         <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">outputfile</span><span class="p">)</span>
       <span class="k">except</span><span class="p">:</span>
-        <span class="k">pass</span>
+        <span class="k">pass</span></div>
 
 
-<span class="kn">from</span> <span class="nn">array</span> <span class="kn">import</span> <span class="n">array</span>
-<span class="kn">import</span> <span class="nn">itertools</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-
-<span class="kn">import</span> <span class="nn">ROOT</span>
-
-<span class="kn">from</span> <span class="nn">lhefile</span> <span class="kn">import</span> <span class="n">LHEFile_JHUGenVBFVH</span><span class="p">,</span> <span class="n">LHEFile_Hwithdecay</span><span class="p">,</span> <span class="n">LHEFile_VHHiggsdecay</span><span class="p">,</span><span class="n">LHEFile_HwithdecayOnly</span><span class="p">,</span> <span class="n">LHEFile_Offshell4l</span><span class="p">,</span><span class="n">LHEFile_StableHiggs</span><span class="p">,</span><span class="n">LHEFile_StableHiggsZHHAWK</span><span class="p">,</span><span class="n">LHEFile_StableHiggsVH</span>
-<span class="kn">from</span> <span class="nn">mela</span> <span class="kn">import</span> <span class="n">Mela</span><span class="p">,</span> <span class="n">SimpleParticle_t</span><span class="p">,</span> <span class="n">SimpleParticleCollection_t</span><span class="p">,</span> <span class="n">TVar</span>
-<span class="kn">from</span> <span class="nn">pythonmelautils</span> <span class="kn">import</span> <span class="n">MultiDimensionalCppArray</span><span class="p">,</span> <span class="n">SelfDParameter</span><span class="p">,</span> <span class="n">SelfDCoupling</span>
-
-
-<div class="viewcode-block" id="tlvfromptetaphim"><a class="viewcode-back" href="../lhe2root.html#lhe2root.tlvfromptetaphim">[docs]</a><span class="k">def</span> <span class="nf">tlvfromptetaphim</span><span class="p">(</span><span class="n">pt</span><span class="p">,</span> <span class="n">eta</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
-  <span class="n">result</span> <span class="o">=</span> <span class="n">ROOT</span><span class="o">.</span><span class="n">TLorentzVector</span><span class="p">()</span>
-  <span class="n">result</span><span class="o">.</span><span class="n">SetPtEtaPhiM</span><span class="p">(</span><span class="n">pt</span><span class="p">,</span> <span class="n">eta</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
-  <span class="k">return</span> <span class="n">result</span></div>
-
-<div class="viewcode-block" id="Event"><a class="viewcode-back" href="../lhe2root.html#lhe2root.Event">[docs]</a><span class="k">class</span> <span class="nc">Event</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-  <span class="n">doneinit</span> <span class="o">=</span> <span class="kc">False</span>
-  <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mela</span><span class="p">,</span> <span class="n">daughters</span><span class="p">,</span> <span class="n">associated</span><span class="p">,</span> <span class="n">mothers</span><span class="p">,</span> <span class="n">isgen</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">daughters</span> <span class="o">=</span> <span class="n">daughters</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">associated</span> <span class="o">=</span> <span class="n">associated</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">mothers</span> <span class="o">=</span> <span class="n">mothers</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">isgen</span> <span class="o">=</span> <span class="n">isgen</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">weight</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">mela</span> <span class="o">=</span> <span class="n">mela</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">mela</span><span class="o">.</span><span class="n">setInputEvent</span><span class="p">(</span><span class="n">daughters</span><span class="p">,</span> <span class="n">associated</span><span class="p">,</span> <span class="n">mothers</span><span class="p">,</span> <span class="n">isgen</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">doneinit</span> <span class="o">=</span> <span class="kc">True</span>
-
-  <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
-    <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mela</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
-
-  <span class="k">def</span> <span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">doneinit</span><span class="p">:</span>
-      <span class="k">return</span> <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mela</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-    <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Event</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
-
-
-
-<div class="viewcode-block" id="LHEEvent"><a class="viewcode-back" href="../lhe2root.html#lhe2root.LHEEvent">[docs]</a><span class="k">class</span> <span class="nc">LHEEvent</span><span class="p">(</span><span class="nb">object</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span><span class="p">):</span>
-  <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">isgen</span><span class="p">):</span>
-    <span class="n">lines</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-
-    <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
-      <span class="k">if</span> <span class="s2">&quot;&lt;wgt&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span> <span class="k">continue</span>
-      <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;&lt;wgt id=&#39;(.*)&#39;&gt;([0-9+Ee.-]*)&lt;/wgt&gt;&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
-      <span class="k">if</span> <span class="n">match</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">[</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
-    <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span> <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="s2">&quot;&lt;&quot;</span> <span class="ow">in</span> <span class="n">line</span> <span class="ow">or</span> <span class="s2">&quot;&gt;&quot;</span> <span class="ow">in</span> <span class="n">line</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())]</span>
-    <span class="n">nparticles</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
-
-    <span class="n">nparticles</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">nparticles</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">weight</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">nparticles</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
-      <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Wrong number of particles! Should be </span><span class="si">{}</span><span class="s2">, have </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nparticles</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
-
-    <span class="n">daughters</span><span class="p">,</span> <span class="n">associated</span><span class="p">,</span> <span class="n">mothers</span> <span class="o">=</span> <span class="p">(</span><span class="n">SimpleParticleCollection_t</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">extracteventparticles</span><span class="p">(</span><span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">isgen</span><span class="p">))</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">list</span><span class="p">(</span><span class="n">mothers</span><span class="p">):</span> <span class="n">mothers</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">daughters</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">associated</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mothers</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">isgen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputevent</span> <span class="o">=</span> <span class="n">InputEvent</span><span class="p">(</span><span class="n">daughters</span><span class="p">,</span> <span class="n">associated</span><span class="p">,</span> <span class="n">mothers</span><span class="p">,</span> <span class="n">isgen</span><span class="p">)</span>
-
-<div class="viewcode-block" id="LHEEvent.extracteventparticles"><a class="viewcode-back" href="../lhe2root.html#lhe2root.LHEEvent.extracteventparticles">[docs]</a>  <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-  <span class="k">def</span> <span class="nf">extracteventparticles</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">lines</span><span class="p">,</span> <span class="n">isgen</span><span class="p">):</span> <span class="s2">&quot;has to be a classmethod that returns daughters, associated, mothers&quot;</span></div>
-
-  <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-    <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inputevent</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="LHEEvent_Offshell4l"><a class="viewcode-back" href="../lhe2root.html#lhe2root.LHEEvent_Offshell4l">[docs]</a><span class="k">class</span> <span class="nc">LHEEvent_Offshell4l</span><span class="p">(</span><span class="n">LHEEvent</span><span class="p">):</span>
-<div class="viewcode-block" id="LHEEvent_Offshell4l.extracteventparticles"><a class="viewcode-back" href="../lhe2root.html#lhe2root.LHEEvent_Offshell4l.extracteventparticles">[docs]</a>  <span class="nd">@classmethod</span>
-  <span class="k">def</span> <span class="nf">extracteventparticles</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">lines</span><span class="p">,</span> <span class="n">isgen</span><span class="p">):</span>
-    <span class="n">daughters</span><span class="p">,</span> <span class="n">mothers</span><span class="p">,</span> <span class="n">associated</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
-
-    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
-      <span class="nb">id</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">mother1</span><span class="p">,</span> <span class="n">mother2</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">])</span>
-      <span class="k">if</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;=</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">6</span> <span class="ow">or</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span> <span class="o">==</span> <span class="mi">21</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">isgen</span><span class="p">:</span>
-        <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">),</span> <span class="s2">&quot;0&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1">#replace the first instance of the jet id with 0, which means unknown jet</span>
-      <span class="k">if</span> <span class="n">status</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
-        <span class="n">mothers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
-
-      <span class="k">if</span> <span class="p">(</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span> <span class="ow">in</span> <span class="p">(</span> <span class="mi">25</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">25</span><span class="p">)</span>  <span class="p">)</span> <span class="ow">and</span> <span class="n">status</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="n">daughters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;added daught&quot;</span><span class="p">)</span>
-        <span class="n">flav4l</span> <span class="o">=</span> <span class="n">flav4l</span><span class="o">*</span><span class="nb">abs</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
-
-        <span class="c1">#      if ( abs(id) in (11, 12, 13, 14, 15, 16) or abs(id) in (1, 2, 3, 4, 5)  ) and status == 1:</span>
-        <span class="c1">#       daughters.append(line)</span>
-        <span class="c1">#       flav4l = flav4l*abs(id)</span>
-      <span class="c1">#if abs(id) in (0, 1, 2, 3, 4, 5, 21) and status == 1:</span>
-      <span class="c1">#  associated.append(line)</span>
-      <span class="c1">#if abs(id) in (0, 1, 2, 3, 4, 5, 21) and status == 1:</span>
-      <span class="c1">#  associated.append(line)</span>
-
-    <span class="c1">#if len(daughters) == 4:</span>
-      <span class="c1">#print &quot;flavour comp:&quot;,flav4l</span>
-    <span class="c1">#if len(daughters) != 4:</span>
-    <span class="c1">#  raise ValueError(&quot;Wrong number of daughters (expected {}, found {})\n\n&quot;.format(4, len(daughters))+&quot;\n&quot;.join(lines))</span>
-    <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">nassociatedparticles</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">associated</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">nassociatedparticles</span><span class="p">:</span>
-      <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Wrong number of associated particles (expected </span><span class="si">{}</span><span class="s2">, found </span><span class="si">{}</span><span class="s2">)</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">nassociatedparticles</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">associated</span><span class="p">))</span><span class="o">+</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">))</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">mothers</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
-      <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> mothers in the event??</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mothers</span><span class="p">))</span><span class="o">+</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">))</span>
-
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">isgen</span><span class="p">:</span> <span class="n">mothers</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">return</span> <span class="n">daughters</span><span class="p">,</span> <span class="n">associated</span><span class="p">,</span> <span class="n">mothers</span></div>
-
-  <span class="n">nassociatedparticles</span> <span class="o">=</span> <span class="kc">None</span></div>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+  <span class="n">main</span><span class="p">()</span> <span class="c1">#runs the lhe2root conversion with raw args</span>
 </pre></div>
 
            </div>

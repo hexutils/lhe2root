@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>useful_funcs_and_constants module &mdash; lhe2root  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            lhe2root
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+    
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">useful_funcs_and_constants module</a><ul>
+<li><a class="reference internal" href="#useful_funcs_and_constants.check_for_MELA"><code class="docutils literal notranslate"><span class="pre">check_for_MELA()</span></code></a></li>
+<li><a class="reference internal" href="#useful_funcs_and_constants.print_msg_box"><code class="docutils literal notranslate"><span class="pre">print_msg_box()</span></code></a></li>
+<li><a class="reference internal" href="#useful_funcs_and_constants.safely_run_process"><code class="docutils literal notranslate"><span class="pre">safely_run_process()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+    <a href="index.html">Home Page</a>
+    <a href="genindex.html">Index</a>
+    <a href="py-modindex.html">Module Index</a>
+    <a href="https://github.com/hexutils/lhe2root">Github Page</a>
+  
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">lhe2root</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">useful_funcs_and_constants module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/useful_funcs_and_constants.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-useful_funcs_and_constants">
+<span id="useful-funcs-and-constants-module"></span><h1>useful_funcs_and_constants module<a class="headerlink" href="#module-useful_funcs_and_constants" title="Permalink to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="useful_funcs_and_constants.check_for_MELA">
+<span class="sig-prename descclassname"><span class="pre">useful_funcs_and_constants.</span></span><span class="sig-name descname"><span class="pre">check_for_MELA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/useful_funcs_and_constants.html#check_for_MELA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#useful_funcs_and_constants.check_for_MELA" title="Permalink to this definition"></a></dt>
+<dd><p>A function that checks whether or not you have the environment variables for MELA set up within your terminal</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>env</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.11)"><em>dict</em></a>) – A dictionary of environment variables gotten by doing dict(os.environ) in the main process</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A boolean as to whether or not MELA is properly set up</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="useful_funcs_and_constants.print_msg_box">
+<span class="sig-prename descclassname"><span class="pre">useful_funcs_and_constants.</span></span><span class="sig-name descname"><span class="pre">print_msg_box</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/useful_funcs_and_constants.html#print_msg_box"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#useful_funcs_and_constants.print_msg_box" title="Permalink to this definition"></a></dt>
+<dd><p>Print message-box with optional title.
+Ripped from <a class="reference external" href="https://stackoverflow.com/questions/39969064/how-to-print-a-message-box-in-python">https://stackoverflow.com/questions/39969064/how-to-print-a-message-box-in-python</a>
+:param msg: The message to use
+:type msg: str
+:param indent: indent size, by default 1
+:type indent: int, optional
+:param width: box width, by default 0
+:type width: int, optional
+:param title: box title, by default “”
+:type title: str, optional</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="useful_funcs_and_constants.safely_run_process">
+<span class="sig-prename descclassname"><span class="pre">useful_funcs_and_constants.</span></span><span class="sig-name descname"><span class="pre">safely_run_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">running_str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/useful_funcs_and_constants.html#safely_run_process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#useful_funcs_and_constants.safely_run_process" title="Permalink to this definition"></a></dt>
+<dd><p>Safely runs a process in the terminal with proper exception handling</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>running_str</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – This is the command you are passing to the terminal</p></li>
+<li><p><strong>env</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.11)"><em>dict</em></a>) – This contains the lhe2root environment variables by doing dict(os.environ) in a main method, by default {}</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, HexUtils.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
